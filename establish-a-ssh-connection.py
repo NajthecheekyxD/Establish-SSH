@@ -8,8 +8,11 @@ password = "cisco123!"
 password_enable = "class123!"
 
 #Create the SSH session
-session = pexpect.spawn('ssh ' + username + '@' + ip_address, encoding= 'utf-8', timeout=20)
+session = pexpect.spawn('ssh ' + username + '@' + ip_address, 
+                        encoding= 'utf-8', timeout=20)
 result = session.expect(['Password:', pexpect.TIMEOUT, pexpect.EOF])
+
+
 
 #Check for error, if exists then display error and exit
 if result != 0:
@@ -34,6 +37,7 @@ result = session.expect(['Password:', pexpect.TIMEOUT, pexpect.EOF])
 if result != 0:
     print('---FAILURE! entering enable mode after sending password')
     exit()
+
 #Enter configuration mode
 session.sendline('configure terminal')
 result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
@@ -67,6 +71,6 @@ print('')
 print('------------------------------------')
 
 #Terminate SSH session
-session.close
+session.close()
 
 
