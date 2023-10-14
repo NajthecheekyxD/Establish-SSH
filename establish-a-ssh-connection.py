@@ -1,82 +1,48 @@
-#Import required module/packages/library
-import re
-import pexpect
+import paramiko
 
-# Define variables
+# Define the SSH connection parameters
 ip_address = '192.168.56.101'
 username = 'prne'
 password = 'cisco123!'
-password_enable = 'class123!'
+new_hostname = 'R1'
 
-# Create the SSH session
-session = pexpect.spawn('ssh '+ username + '@' + ip_address, encoding='utf-8', timeout=20)
-result = session.expect(['Password:', pexpect.TIMEOUT, pexpect.EOF])
+# Create an SSH client object
+ssh = paramiko.SSHClient()
 
-# Check for error, if exists then display error and exit
-if result != 0:
-   print('--- FAILURE! creating session for: ', ip_address)
-   exit()
+# Automatically add the SSH server's host key (no need to do this in a real setting)
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-# Session expecting password, enter details
-session.sendline(password)
-result = session.expect(['>', pexpect.TIMEOUT, pexpect.EOF])
+# Try to establish a connection to the SSH server
+try:
+    ssh.connect(ip_address, username=username, password=password)
+except paramiko.AuthenticationException:
+    print('---FAILURE! Authentication failed, please verify your credentials')
+    exit()
+except paramiko.SSHException as sshException:
+    print('---FAILURE! Unable to establish SSH connection: ', sshException)
+    exit()
+except paramiko.BadHostKeyException as badHostKeyException:
+    print('---FAILURE! Unable to verify server\'s host key: ', badHostKeyException)
+    exit()
 
-# Check for error, if exists then display error and exit
-if result != 0:
-   print('--- FAILURE! entering password: ', password)
-   exit()
+# If the connection was successful, create a new channel for remote commands
+channel = ssh.invoke_shell()
 
-# Enter enable mode
-session.sendline('enable')
-result = session.expect(['Password:', pexpect.TIMEOUT, pexpect.EOF])
+# Send the command to modify the device hostname
+channel.send('configure terminal\n')
+channel.send('hostname ' + new_hostname + '\n')
+channel.send('end\n')
 
-# Check for error, if exists then display error and exit
-if result != 0:
-   print('--- Failure! entering enable mode')
-   exit()
+# Wait for the command to complete
+while not channel.recv_ready():
+    pass
 
-# Send enable password details
-session.sendline(password_enable)
-result = session.expect(['#', pexpect.TIMEOUT, pexpect.EOF])
+# Print the output of the command
+print(channel.recv(1024).decode('utf-8'))
 
-# Check for error, if exists then display error and exit
-if result != 0:
-   print('--- Failure! entering enable mode after sending password')
-   exit()
+# Close the SSH connection
+ssh.close()
 
-# Enter configuration mode
-session.sendline('configure terminal')
-result = session.expect([r'.\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
-
-# Check for error, if exists then display error and exit
-if result != 0:
-   print('--- Failure! entering config mode')
-   exit()
-
-# Change hostname to R1
-session.sendline('hostname R1')
-result = session.expect([r'R1\(config\)#', pexpect.TIMEOUT, pexpect.EOF])
-
-# Check for error, if exists then display error and exit
-if result != 0:
-   print('--- Failure! setting hostname')
-
-# Exit config mode
-session.sendline('exit')
-
-# Exit enable mode
-session.sendline('exit')
-
-# Display a success message if works
-print('------------------------------------------------------')
-print('')
-print('--- Success! connecting to: ', ip_address)
-print('---              Username: ', username)
-print('---              Password: ', password)
-print('')
-print('------------------------------------------------------')
-
-# Terminate SSH session
-session.close()
+​
 
 
