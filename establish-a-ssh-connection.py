@@ -1,4 +1,6 @@
 import paramiko
+ssh = paramiko.SSHClient()
+ssh.start_client()
 
 # Define the SSH connection parameters
 ip_address = '192.168.56.101'
