@@ -1,6 +1,11 @@
 import paramiko
-ssh = paramiko.SSHClient()
-ssh.start_client()
+
+def connect_to_ssh(ip_address, username, password):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(ip_address, username=username, password=password)  
+connect_to_ssh("192.168.1.1", "username", "password")
+
 
 # Define the SSH connection parameters
 ip_address = '192.168.56.101'
@@ -44,7 +49,5 @@ print(channel.recv(1024).decode('utf-8'))
 
 # Close the SSH connection
 ssh.close()
-
-​
 
 
