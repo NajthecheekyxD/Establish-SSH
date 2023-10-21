@@ -3,9 +3,11 @@ import paramiko
 def connect_to_ssh(ip_address, username, password):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(ip_address, username=username, password=password)  
+    ssh.connect(ip_address, username=username, password=password)
 connect_to_ssh("192.168.56.101", "username", "password")
+print("SSH connection successful to {ip_address}")
 print('8')
+
 
 # Define the SSH connection parameters
 ip_address = '192.168.56.101'
