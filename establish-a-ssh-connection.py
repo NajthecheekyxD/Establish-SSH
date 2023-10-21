@@ -32,6 +32,7 @@ except paramiko.BadHostKeyException as badHostKeyException:
     print('---FAILURE! Unable to verify server\'s host key: ', badHostKeyException)
     exit()
 print('34')
+
 # If the connection was successful, create a new channel for remote commands
 channel = ssh.invoke_shell()
 
@@ -40,14 +41,30 @@ channel.send('configure terminal\n')
 channel.send('hostname ' + new_hostname + '\n')
 channel.send('end\n')
 print("11")
+
 # Wait for the command to complete
 while not channel.recv_ready():
     pass
 print("24")
+
 # Print the output of the command
 print(channel.recv(1024).decode('utf-8'))
 print("36")
+
+# Send a command to the remote device to output the running configuration and save this to a file locally
+channel.send('show running-config\n')
+
+# Wait for the command to complete
+while not channel.recv_ready():
+    pass
+
+# Print the output of the command
+print(channel.recv(1024).decode('utf-8'))
+
+# Save the output to a file
+with open('running_config.txt', 'w') as f:
+    f.write(channel.recv(1024).decode('utf-8'))
+
 # Close the SSH connection
 ssh.close()
 print("43")
-
