@@ -9,36 +9,26 @@ new_hostname = 'R1'
 
 
 def connect_to_ssh(ip_address, username, password):
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(ip_address, username=username, password=password)
-connect_to_ssh("192.168.56.101", "prne", "cisco123!")
-print("SSH connection successful to {ip_address}")
-print('8')
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(ip_address, username=username, password=password)
+        return ssh
+    except paramiko.AuthenticationException:
+        print('---FAILURE! Authentication failed, please verify your credentials')
+        exit()
+    except paramiko.SSHException as sshException:
+        print('---FAILURE! Unable to establish SSH connection: ', sshException)
+        exit()
+    except paramiko.BadHostKeyException as badHostKeyException:
+        print('---FAILURE! Unable to verify server\'s host key: ', badHostKeyException)
+        exit()
 
-
-# Create an SSH client object
-ssh = paramiko.SSHClient()
-
-# Automatically add the SSH server's host key (no need to do this in a real setting)
-ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-# Try to establish a connection to the SSH server
-try:
-    ssh.connect(ip_address, username=username, password=password)
-except paramiko.AuthenticationException:
-    print('---FAILURE! Authentication failed, please verify your credentials')
-    exit()
-except paramiko.SSHException as sshException:
-    print('---FAILURE! Unable to establish SSH connection: ', sshException)
-    exit()
-except paramiko.BadHostKeyException as badHostKeyException:
-    print('---FAILURE! Unable to verify server\'s host key: ', badHostKeyException)
-    exit()
+ssh_client = connect_to_ssh(ip_address, username, password)
 print('11')
 
 # If the connection was successful, create a new channel for remote commands
-channel = ssh.invoke_shell()
+channel = ssh_client.invoke_shell()
 
 # Send the command to modify the device hostname
 channel.send('configure terminal\n')
@@ -70,5 +60,5 @@ with open('running_config.txt', 'w') as f:
     f.write(channel.recv(1024).decode('utf-8'))
 
 # Close the SSH connection
-ssh.close()
+ssh_client.close()
 print("43")
