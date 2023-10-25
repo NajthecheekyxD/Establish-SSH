@@ -13,6 +13,7 @@ def connect_to_ssh(ip_address, username, password):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip_address, username=username, password=password)
+        print(f"SSH connection successful to {ip_address}")
         return ssh
     except paramiko.AuthenticationException:
         print('---FAILURE! Authentication failed, please verify your credentials')
