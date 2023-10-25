@@ -1,5 +1,5 @@
 import paramiko
-print("2") #Prints lines of code from 2-34
+
 
 # Define the SSH connection parameters
 ip_address = '192.168.56.101'
@@ -12,7 +12,7 @@ def connect_to_ssh(ip_address, username, password):
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(ip_address, username=username, password=password)
+        ssh.connect(ip_address, username=username, password=password,allow_agent=False,look_for_keys=False)
         print(f"SSH connection successful to {ip_address}")
         return ssh
     except paramiko.AuthenticationException:
@@ -26,7 +26,7 @@ def connect_to_ssh(ip_address, username, password):
         exit()
 
 ssh_client = connect_to_ssh(ip_address, username, password)
-print('11')
+
 
 # If the connection was successful, create a new channel for remote commands
 channel = ssh_client.invoke_shell()
@@ -35,16 +35,16 @@ channel = ssh_client.invoke_shell()
 channel.send('configure terminal\n')
 channel.send('hostname ' + new_hostname + '\n')
 channel.send('end\n')
-print("24")
+
 
 # Wait for the command to complete
 while not channel.recv_ready():
     pass
-print("30")
+
 
 # Print the output of the command
 print(channel.recv(1024).decode('utf-8'))
-print("39")
+
 
 # Send a command to the remote device to output the running configuration and save this to a file locally
 channel.send('show running-config\n')
@@ -62,4 +62,4 @@ with open('running_config.txt', 'w') as f:
 
 # Close the SSH connection
 ssh_client.close()
-print("43")
+
