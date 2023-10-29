@@ -33,7 +33,7 @@ def change_hostname():
     
     while True:
         try:
-            ssh_conn = ConnectHandler(ssh_device)
+            ssh_conn = ConnectHandler(**ssh_device) # Corrected here
             ssh_conn.enable() # Enter enable mode
             ssh_conn.config_mode() # Enter global configuration mode
             ssh_conn.send_command('hostname ' + new_hostname)
@@ -51,7 +51,7 @@ def change_hostname():
 def save_running_config():
     while True:
         try:
-            ssh_conn = ConnectHandler(ssh_device)
+            ssh_conn = ConnectHandler(**ssh_device) # Corrected here
             ssh_conn.enable() # Enter enable mode
             ssh_conn.send_command('show running-config')
             running_config = ssh_conn.recv() # Retrieve the running configuration
@@ -70,5 +70,3 @@ def save_running_config():
 if __name__ == "__main__":
     while True:
         ssh_menu()
-
-
