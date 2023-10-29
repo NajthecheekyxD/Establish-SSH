@@ -7,7 +7,7 @@ ssh_device = {
     'ip': '192.168.56.101',
     'username': 'prne',
     'password': 'cisco123!',
-    'secret': 'cisco', # Enable secret password
+    'secret': 'class123!', # Enable secret password
 }
 
 def ssh_menu():
