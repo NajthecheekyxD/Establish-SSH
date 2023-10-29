@@ -1,55 +1,59 @@
-import paramiko
+from netmiko import ConnectHandler
 
+# Define the device parameters for SSH connection
+ssh_device = {
+    'device_type': 'cisco_ios',
+    'ip': '192.168.56.101',
+    'username': 'prne',
+    'password': 'cisco123!',
+    'secret': 'cisco123!',  # Enable secret password
+}
 
-# Define the SSH connection parameters
-ip_address = '192.168.56.101'
-username = 'prne'
-password = 'cisco123!'
-new_hostname = 'R1'
+def ssh_menu():
+    print("SSH Menu")
+    print("1. Change Device Hostname")
+    print("2. Save Running Configuration")
+    print("3. Exit")
+    
+    choice = input("Enter your choice (1/2/3): ")
+    
+    if choice == "1":
+        change_hostname()
+    elif choice == "2":
+        save_running_config()
+    elif choice == "3":
+        print("Exiting SSH Menu")
+    else:
+        print("Invalid choice. Please enter 1, 2, or 3.")
+        ssh_menu()
 
+def change_hostname():
+    new_hostname = input("Enter the new hostname: ")
+    
+    ssh_conn = ConnectHandler(**ssh_device)
+    ssh_conn.enable()  # Enter enable mode
+    ssh_conn.config_mode()  # Enter global configuration mode
+    ssh_conn.send_command('hostname ' + new_hostname)
+    ssh_conn.exit_config_mode()  # Exit configuration mode
+    ssh_conn.send_command('write memory')  # Save configuration
+    ssh_conn.disconnect()
+    
+    print(f"Device hostname changed to {new_hostname}")
 
-def connect_to_ssh(ip_address, username, password):
-    try:
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(ip_address, username=username, password=password,allow_agent=False,look_for_keys=False)
-        print(f"SSH connection successful to {ip_address}")
-        return ssh
-    except paramiko.AuthenticationException:
-        print('---FAILURE! Authentication failed, please verify your credentials')
-        exit()
-    except paramiko.SSHException as sshException:
-        print('---FAILURE! Unable to establish SSH connection: ', sshException)
-        exit()
-    except paramiko.BadHostKeyException as badHostKeyException:
-        print('---FAILURE! Unable to verify server\'s host key: ', badHostKeyException)
-        exit()
+def save_running_config():
+    ssh_conn = ConnectHandler(**ssh_device)
+    ssh_conn.enable()  # Enter enable mode
+    ssh_conn.send_command('show running-config')
+    running_config = ssh_conn.recv()  # Retrieve the running configuration
+    ssh_conn.disconnect()
+    
+    with open('ssh_running_config.txt', 'w') as f:
+        f.write(running_config)
+    
+    print("Running configuration saved to ssh_running_config.txt")
 
-ssh_client = connect_to_ssh(ip_address, username, password)
+if __name__ == "__main__":
+    while True:
+        ssh_menu()
 
-
-# If the connection was successful, create a new channel for remote commands
-channel = ssh_client.invoke_shell()
-
-# Send the command to modify the device hostname
-channel.send('configure terminal\n')
-channel.send('hostname ' + new_hostname + '\n')
-channel.send('end\n')
-
-# Send a command to the remote device to output the running configuration and save this to a file locally
-channel.send('show running-config\n')
-
-# Wait for the command to complete
-while not channel.recv_ready():
-    pass
-
-# Print the output of the command
-print(channel.recv(1024).decode('utf-8'))
-
-# Save the output to a file
-with open('running_config.txt', 'w') as f:
-    f.write(channel.recv(1024).decode('utf-8'))
-
-# Close the SSH connection
-ssh_client.close()
 
