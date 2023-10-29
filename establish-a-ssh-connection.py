@@ -7,7 +7,7 @@ ssh_device = {
     'ip': '192.168.56.101',
     'username': 'prne',
     'password': 'cisco123!',
-    'secret': 'cisco123!', # Enable secret password
+    'secret': 'cisco', # Enable secret password
 }
 
 def ssh_menu():
@@ -33,7 +33,7 @@ def change_hostname():
     
     while True:
         try:
-            ssh_conn = ConnectHandler(**ssh_device)
+            ssh_conn = ConnectHandler(ssh_device)
             ssh_conn.enable() # Enter enable mode
             ssh_conn.config_mode() # Enter global configuration mode
             ssh_conn.send_command('hostname ' + new_hostname)
@@ -51,7 +51,7 @@ def change_hostname():
 def save_running_config():
     while True:
         try:
-            ssh_conn = ConnectHandler(**ssh_device)
+            ssh_conn = ConnectHandler(ssh_device)
             ssh_conn.enable() # Enter enable mode
             ssh_conn.send_command('show running-config')
             running_config = ssh_conn.recv() # Retrieve the running configuration
@@ -62,10 +62,10 @@ def save_running_config():
             print("Retrying...")
             time.sleep(5)
     
-    with open('ssh_running_config.txt', 'w') as f:
+    with open('running_config.txt', 'w') as f:
         f.write(running_config)
     
-    print("Running configuration saved to ssh_running_config.txt")
+    print("Running configuration saved to running_config.txt")
 
 if __name__ == "__main__":
     while True:
