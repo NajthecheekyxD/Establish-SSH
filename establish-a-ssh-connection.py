@@ -1,4 +1,5 @@
 from netmiko import ConnectHandler
+import time
 
 # Define the device parameters for SSH connection
 ssh_device = {
@@ -6,7 +7,7 @@ ssh_device = {
     'ip': '192.168.56.101',
     'username': 'prne',
     'password': 'cisco123!',
-    'secret': 'cisco123!',  # Enable secret password
+    'secret': 'cisco123!', # Enable secret password
 }
 
 def ssh_menu():
@@ -30,22 +31,36 @@ def ssh_menu():
 def change_hostname():
     new_hostname = input("Enter the new hostname: ")
     
-    ssh_conn = ConnectHandler(**ssh_device)
-    ssh_conn.enable()  # Enter enable mode
-    ssh_conn.config_mode()  # Enter global configuration mode
-    ssh_conn.send_command('hostname ' + new_hostname)
-    ssh_conn.exit_config_mode()  # Exit configuration mode
-    ssh_conn.send_command('write memory')  # Save configuration
-    ssh_conn.disconnect()
+    while True:
+        try:
+            ssh_conn = ConnectHandler(**ssh_device)
+            ssh_conn.enable() # Enter enable mode
+            ssh_conn.config_mode() # Enter global configuration mode
+            ssh_conn.send_command('hostname ' + new_hostname)
+            ssh_conn.exit_config_mode() # Exit configuration mode
+            ssh_conn.send_command('write memory') # Save configuration
+            ssh_conn.disconnect()
+            break
+        except ValueError as e:
+            print(f"Error: {e}")
+            print("Retrying...")
+            time.sleep(5)
     
     print(f"Device hostname changed to {new_hostname}")
 
 def save_running_config():
-    ssh_conn = ConnectHandler(**ssh_device)
-    ssh_conn.enable()  # Enter enable mode
-    ssh_conn.send_command('show running-config')
-    running_config = ssh_conn.recv()  # Retrieve the running configuration
-    ssh_conn.disconnect()
+    while True:
+        try:
+            ssh_conn = ConnectHandler(**ssh_device)
+            ssh_conn.enable() # Enter enable mode
+            ssh_conn.send_command('show running-config')
+            running_config = ssh_conn.recv() # Retrieve the running configuration
+            ssh_conn.disconnect()
+            break
+        except ValueError as e:
+            print(f"Error: {e}")
+            print("Retrying...")
+            time.sleep(5)
     
     with open('ssh_running_config.txt', 'w') as f:
         f.write(running_config)
