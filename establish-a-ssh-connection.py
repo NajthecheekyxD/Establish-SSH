@@ -24,6 +24,7 @@ def ssh_menu():
         save_running_config()
     elif choice == "3":
         print("Exiting SSH Menu")
+        return # Added to stop the ssh_menu() function from being called again
     else:
         print("Invalid choice. Please enter 1, 2, or 3.")
         ssh_menu()
@@ -67,5 +68,4 @@ def save_running_config():
     print("Running configuration saved to running_config.txt")
 
 if __name__ == "__main__":
-    while True:
-        ssh_menu()
+    ssh_menu() # Call the ssh_menu() once
