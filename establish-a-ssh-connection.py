@@ -36,16 +36,6 @@ channel.send('configure terminal\n')
 channel.send('hostname ' + new_hostname + '\n')
 channel.send('end\n')
 
-
-# Wait for the command to complete
-while not channel.recv_ready():
-    pass
-
-
-# Print the output of the command
-print(channel.recv(1024).decode('utf-8'))
-
-
 # Send a command to the remote device to output the running configuration and save this to a file locally
 channel.send('show running-config\n')
 
